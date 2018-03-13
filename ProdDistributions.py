@@ -1,4 +1,7 @@
 from norm import norm
+'''
+2018-02-22 Check for condition that all values are None'''
+
 from LowHalfNormal import LowHalfNormal
 from mquantiles import mquantiles
 from numpy import array,ndarray
@@ -15,6 +18,7 @@ class ProdDistributions():
         if dist2==[]:
             self.value=[]
             return
+            
         self.n=n
         self.p=p
         if self.p==None:self.p=list(map(lambda t:(t+.5)/self.n,range(self.n)))
@@ -25,6 +29,14 @@ class ProdDistributions():
         if isinstance(dist2,(list,ndarray)):eqpv2=array(dist2)
         else:
             eqpv2=dist2.isf(self.p)
+
+        #Check for cases where there are arrays of undefined values
+        if all([not(t) for t in eqpv1]):
+            self.value=[]
+            return
+        if all([not(t) for t in eqpv2]):
+            self.value=[]
+            return
 
         n1,n2=len( eqpv1),len(eqpv2)
         equiProb=array(eqpv1).reshape(n1,1)*array(eqpv2)#matrix multiplication to get a equiprobable value

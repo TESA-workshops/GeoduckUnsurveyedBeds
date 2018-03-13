@@ -1,10 +1,11 @@
+'''2015-06-15 Force DenCat values from .mdb file to be integers'''
 from ADO import adoBaseClass as OpenDB
 from numpy import ndarray,array
 
 
 class DensDatByRegion(ndarray):
   '''A numpy.array of density values'''
-  def __new__(self,ODB,Region,DenCat=-1):
+  def __new__(self,ODB,Region,DenCat=-1,FieldType=int):
  
       query ='SELECT  [205-CurrentDen_on_Surveyed_Beds_w_DenCat_QRegion].CurrentDensity '
       query+=' FROM [205-CurrentDen_on_Surveyed_Beds_w_DenCat_QRegion] '
@@ -17,8 +18,8 @@ class DensDatByRegion(ndarray):
         query+=   "([205-CurrentDen_on_Surveyed_Beds_w_DenCat_QRegion].QuotaCalcRegion is NULL)  "
     
       if DenCat>-1:
-        query+= " and (  [205-CurrentDen_on_Surveyed_Beds_w_DenCat_QRegion].DenCat= "
-        query+=   str(DenCat)+')'
+          query+= " and (  [205-CurrentDen_on_Surveyed_Beds_w_DenCat_QRegion].DenCat= "
+          query+=   str(DenCat)+')'
       query+=') ' #Close the where
       query+=  ';'
       
@@ -33,7 +34,7 @@ class DensDatByRegion(ndarray):
         
 
 if __name__ == "__main__":
-  databasepath='H:\\QuotaCalcs\\data\\2014_Quotas.mdb'
+  databasepath='q:\\analyses\\QuotaOptionCalculations\\20150612.bugcheck\\2016_Quotas.mdb'
   ODB=OpenDB(databasepath)
   test=DensDatByRegion(ODB,'GeorgiaStrait',DenCat=1)
 

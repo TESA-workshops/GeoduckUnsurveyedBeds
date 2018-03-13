@@ -1,3 +1,9 @@
+'''
+2018-02-22 In the output, include fields related to biomass-prime.
+           Convert values of -1 to NULL
+
+'''
+
 # for column types, see http://www.w3schools.com/ado/ado_datatypes.asp
 from numpy import ndarray
 import datetime
@@ -20,7 +26,7 @@ class NewMDB:
             adox.Create (CONNECTION_STRING)
                   
  
-        self.Tname='12_Biomass_on_Unsurveyed_Beds'       
+        self.Tname='[12-Biomass_on_Unsurveyed_Beds]'       
 
         self.DB = Dispatch ('ADODB.Connection')
         self.DB.Open (CONNECTION_STRING)
@@ -74,6 +80,26 @@ class NewMDB:
         CreateStatement+='BiomR95H DOUBLE, '
         CreateStatement+='BiomR99H DOUBLE, '
         
+        CreateStatement+='BiomDC_pr_99L DOUBLE, '
+        CreateStatement+='BiomDC_pr_95L DOUBLE, '
+        CreateStatement+='BiomDC_pr_90L DOUBLE, '
+        CreateStatement+='BiomDC_pr_75L DOUBLE, '
+        CreateStatement+='BiomDC_pr_Med DOUBLE, '
+        CreateStatement+='BiomDC_pr_75H DOUBLE, '
+        CreateStatement+='BiomDC_pr_90H DOUBLE, '
+        CreateStatement+='BiomDC_pr_95H DOUBLE, '
+        CreateStatement+='BiomDC_pr_99H DOUBLE, '
+        
+        CreateStatement+='BiomR_pr_99L DOUBLE, '
+        CreateStatement+='BiomR_pr_95L DOUBLE, '
+        CreateStatement+='BiomR_pr_90L DOUBLE, '
+        CreateStatement+='BiomR_pr_75L DOUBLE, '
+        CreateStatement+='BiomR_pr_Med DOUBLE, '
+        CreateStatement+='BiomR_pr_75H DOUBLE, '
+        CreateStatement+='BiomR_pr_90H DOUBLE, '
+        CreateStatement+='BiomR_pr_95H DOUBLE, '
+        CreateStatement+='BiomR_pr_99H DOUBLE, '
+        
         CreateStatement+='YearCalc INT, '
         CreateStatement+='MontCalc INT, '
         CreateStatement+='DayCalc INT); '
@@ -93,8 +119,10 @@ class NewMDB:
         query+=     "BedKey, description, stat_area, sub_area, bed_code, TextCode, gis_code, "
         query+=     "BedArea, BedAreaSE, MeanWt, MeanWtSE, MeanWtSource,  "
         query+=     "DenCat, QuotaCalcRegion, LicenceRegion,  "
-        query+=     "n_DenCat, BiomDC99L, BiomDC95L, BiomDC90L, BiomDC75L, BiomDCMed, BiomDC75H, BiomDC90H, BiomDC95H, BiomDC99H,  "
-        query+=     "n_Region, BiomR99L, BiomR95L, BiomR90L, BiomR75L, BiomRMed, BiomR75H, BiomR90H, BiomR95H, BiomR99H,  "
+        query+=     "n_DenCat, BiomDC99L,     BiomDC95L,     BiomDC90L,     BiomDC75L,     BiomDCMed,     BiomDC75H,     BiomDC90H,    BiomDC95H,      BiomDC99H,  "
+        query+=               "BiomDC_pr_99L, BiomDC_pr_95L, BiomDC_pr_90L, BiomDC_pr_75L, BiomDC_pr_Med, BiomDC_pr_75H, BiomDC_pr_90H, BiomDC_pr_95H, BiomDC_pr_99H,  "
+        query+=     "n_Region, BiomR99L,     BiomR95L,     BiomR90L,     BiomR75L,     BiomRMed,     BiomR75H,     BiomR90H,     BiomR95H,     BiomR99H,  "
+        query+=               "BiomR_pr_99L, BiomR_pr_95L, BiomR_pr_90L, BiomR_pr_75L, BiomR_pr_Med, BiomR_pr_75H, BiomR_pr_90H, BiomR_pr_95H, BiomR_pr_99H,  "
         query+=     "YearCalc, MontCalc, DayCalc) "
         query+="Values("
         query+=str(self.Key.GetValue(IncrementFirst=True))
@@ -133,6 +161,16 @@ class NewMDB:
         query+=","+str(CBBiomassDC[6])
         query+=","+str(CBBiomassDC[7])
         query+=","+str(CBBiomassDC[8])
+        CBBiomass_prDC=CurVal['CBBiomass_prDC']
+        query+=","+str(CBBiomass_prDC[0])
+        query+=","+str(CBBiomass_prDC[1])
+        query+=","+str(CBBiomass_prDC[2])
+        query+=","+str(CBBiomass_prDC[3])
+        query+=","+str(CBBiomass_prDC[4])
+        query+=","+str(CBBiomass_prDC[5])
+        query+=","+str(CBBiomass_prDC[6])
+        query+=","+str(CBBiomass_prDC[7])
+        query+=","+str(CBBiomass_prDC[8])
         
         query+=","+str(CurVal['n_Region'])
         CBBiomassQR=CurVal['CBBiomassQR']
@@ -146,8 +184,20 @@ class NewMDB:
         query+=","+str(CBBiomassQR[7])
         query+=","+str(CBBiomassQR[8])
         
+        CBBiomass_prQR=CurVal['CBBiomass_prQR']
+        query+=","+str(CBBiomass_prQR[0])
+        query+=","+str(CBBiomass_prQR[1])
+        query+=","+str(CBBiomass_prQR[2])
+        query+=","+str(CBBiomass_prQR[3])
+        query+=","+str(CBBiomass_prQR[4])
+        query+=","+str(CBBiomass_prQR[5])
+        query+=","+str(CBBiomass_prQR[6])
+        query+=","+str(CBBiomass_prQR[7])
+        query+=","+str(CBBiomass_prQR[8])
+        
         query+=","+str(y)+","+str(m)+","+str(d)+");"
         query=query.replace('None','-32767')
+        query=query.replace('-1,','NULL,')
         
         try:
             self.DB.Execute(query)

@@ -1,11 +1,16 @@
+'''
+2018-02-22 New version to include calculations for biomass-prime
+           To avoid calculating B-prime based on bed-categories, there are lines
+           of code to delete or undelete.  Currently line# 36-41
+'''
 from ADO import adoBaseClass as OpenDB
 from DensDatByRegion import DensDatByRegion
+from DensDatByRegion_pr import DensDatByRegion_pr
 from norm import norm
 from LowHalfNormal import LowHalfNormal
 from ProdDistributions import ProdDistributions
 
 import gc
-import pdb
 
 class BedData:
     '''Density estimates as recorded in the Dom-database
@@ -25,10 +30,19 @@ class BedData:
       #Bed specific density estimates for the entire region.  combined density classes
       #DenCat indicates that all density-classes are to be used to calculate distributions
       self.DDBR=DensDatByRegion(self.ODB,self.Region,DenCat=-1)
+      self.DDBR_pr=DensDatByRegion_pr(self.ODB,self.Region,DenCat=-1)
 
       #Consider density-class of surveyed beds
-      if self.DenCat>-1:self.DensDatByDenCat=DensDatByRegion(self.ODB,self.Region,DenCat=self.DenCat)
-      else:self.DensDatByDenCat=self.DDBR
+      if self.DenCat>-1:
+          self.DensDatByDenCat   =DensDatByRegion(   self.ODB,self.Region,DenCat=self.DenCat)
+          #self.DensDatByDenCat_pr=DensDatByRegion_pr(self.ODB,self.Region,DenCat=self.DenCat)
+          
+          #in case we don't want to show prime-results for specific density-categories
+          self.DensDatByDenCat_pr=[None  for t in self.DensDatByDenCat]
+          
+      else:
+          self.DensDatByDenCat   =self.DDBR
+          self.DensDatByDenCat_pr=self.DDBR_pr
 
       #Read bed data (surveyed and unsurveyed)
       query=self.MakeQuery()
@@ -49,11 +63,21 @@ class BedData:
       print('\n BedData 50',self.Region,' ',self.DenCat)
       while not(self.ODB.rs.EOF):
           CurRec=ODB.Get()
-          self.values+=[BedVal(ODB,CurRec,nfield,self.DensDatByDenCat,\
-                               self.DDBR,QuantileUse=self.QuantileUse,p=p)]
+          try:
+             self.values+=[BedVal(ODB,CurRec,nfield,self.DensDatByDenCat,self.DensDatByDenCat_pr,\
+                                  self.DDBR,self.DDBR_pr,QuantileUse=self.QuantileUse,p=p)]
+          except:
+             print()
+             print('BedData 69')
+             print('CurRec',CurRec)
+             print('self.DensDatByDenCat',self.DensDatByDenCat)
+             print('self.DensDatByDenCat_pr',self.DensDatByDenCat_pr)
+             print('self.DDBR',self.DDBR)
+             print('self.DDBR_pr',self.DDBR_pr)
+             self.values+=[BedVal(ODB,CurRec,nfield,self.DensDatByDenCat,self.DensDatByDenCat_pr,\
+                                  self.DDBR,self.DDBR_pr,QuantileUse=self.QuantileUse,p=p)]
           print(self.values[-1]['QuotaCalcRegion'],self.values[-1]['stat_area'],\
                 self.values[-1]['sub_area'],self.values[-1]['gis_code'],self.values[-1]['description'])
-          
           OutMDB.ADDTo_Results(self.values[-1])
 
       gc.collect()
@@ -84,7 +108,7 @@ class BedData:
       if self.Region!=None:WhereString+=["("+self.TableName+"QuotaCalcRegion='"+self.Region+"')"]
       else :WhereString+=["("+self.TableName+"QuotaCalcRegion is null)"]
       if self.DenCat!=-1:
-          WhereString+=["("+self.TableName+"DenCat='"+str(self.DenCat)+"')"]
+          WhereString+=["("+self.TableName+"DenCat="+str(self.DenCat)+")"]
       else:
           WhereString+=["("+self.TableName+"DenCat is Null)"]
           
@@ -110,7 +134,7 @@ class BedData:
 
 class BedVal(dict):
   '''Class to contain information about individual beds'''
-  def __new__(self,ODB, CurRec,nfield,DensDatByDenCat,DDBR,QuantileUse,n=100,p=None):
+  def __new__(self,ODB, CurRec,nfield,DensDatByDenCat,DensDatByDenCat_pr,DDBR,DDBR_pr,QuantileUse,n=100,p=None):
     self.n=n
     self.p=p
     if self.p==None:self.p=list(map(lambda t:(t+.5)/self.n,range(self.n)))
@@ -132,8 +156,13 @@ class BedVal(dict):
     BiomassDC=ProdDistributions(DistWeightByArea,DensDatByDenCat,p=self.p)#Based upon Density-class and region
     BiomassQR=ProdDistributions(DistWeightByArea,DDBR,p=self.p)#Based on Region only
 
-    CurValue['CBBiomassDC']=BiomassDC.isf(QuantileUse)
-    CurValue['CBBiomassQR']=BiomassQR.isf(QuantileUse)
+    Biomass_pr_DC=ProdDistributions(DistWeightByArea,DensDatByDenCat_pr,p=self.p)#Based upon Density-class and region
+    Biomass_pr_QR=ProdDistributions(DistWeightByArea,DDBR_pr,p=self.p)#Based on Region only
+
+    CurValue['CBBiomassDC']   =BiomassDC.isf(QuantileUse)
+    CurValue['CBBiomassQR']   =BiomassQR.isf(QuantileUse)
+    CurValue['CBBiomass_prDC']=Biomass_pr_DC.isf(QuantileUse)
+    CurValue['CBBiomass_prQR']=Biomass_pr_QR.isf(QuantileUse)
     CurValue['n_DenCat']=len(DensDatByDenCat)
     CurValue['n_Region']=len(DDBR)
     return(CurValue)
