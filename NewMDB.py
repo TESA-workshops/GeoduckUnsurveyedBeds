@@ -1,7 +1,10 @@
 '''
 2018-02-22 In the output, include fields related to biomass-prime.
            Convert values of -1 to NULL
-
+2018-04-17
+    Remove Fields corresponding to B-prime and density-categories
+    Change field names corresponding to B-prime and regional densities
+        BPrimeR95L, BPrimeR90L etc
 '''
 
 # for column types, see http://www.w3schools.com/ado/ado_datatypes.asp
@@ -80,25 +83,25 @@ class NewMDB:
         CreateStatement+='BiomR95H DOUBLE, '
         CreateStatement+='BiomR99H DOUBLE, '
         
-        CreateStatement+='BiomDC_pr_99L DOUBLE, '
-        CreateStatement+='BiomDC_pr_95L DOUBLE, '
-        CreateStatement+='BiomDC_pr_90L DOUBLE, '
-        CreateStatement+='BiomDC_pr_75L DOUBLE, '
-        CreateStatement+='BiomDC_pr_Med DOUBLE, '
-        CreateStatement+='BiomDC_pr_75H DOUBLE, '
-        CreateStatement+='BiomDC_pr_90H DOUBLE, '
-        CreateStatement+='BiomDC_pr_95H DOUBLE, '
-        CreateStatement+='BiomDC_pr_99H DOUBLE, '
+        #CreateStatement+='BprimeDC99L DOUBLE, '
+        #CreateStatement+='BprimeDC95L DOUBLE, '
+        #CreateStatement+='BprimeDC90L DOUBLE, '
+        #CreateStatement+='BprimeDC75L DOUBLE, '
+        #CreateStatement+='BprimeDCMed DOUBLE, '
+        #CreateStatement+='BprimeDC75H DOUBLE, '
+        #CreateStatement+='BprimeDC90H DOUBLE, '
+        #CreateStatement+='BprimeDC95H DOUBLE, '
+        #CreateStatement+='BprimeDC99H DOUBLE, '
         
-        CreateStatement+='BiomR_pr_99L DOUBLE, '
-        CreateStatement+='BiomR_pr_95L DOUBLE, '
-        CreateStatement+='BiomR_pr_90L DOUBLE, '
-        CreateStatement+='BiomR_pr_75L DOUBLE, '
-        CreateStatement+='BiomR_pr_Med DOUBLE, '
-        CreateStatement+='BiomR_pr_75H DOUBLE, '
-        CreateStatement+='BiomR_pr_90H DOUBLE, '
-        CreateStatement+='BiomR_pr_95H DOUBLE, '
-        CreateStatement+='BiomR_pr_99H DOUBLE, '
+        CreateStatement+='BprimeR99L DOUBLE, '
+        CreateStatement+='BprimeR95L DOUBLE, '
+        CreateStatement+='BprimeR90L DOUBLE, '
+        CreateStatement+='BprimeR75L DOUBLE, '
+        CreateStatement+='BprimeRMed DOUBLE, '
+        CreateStatement+='BprimeR75H DOUBLE, '
+        CreateStatement+='BprimeR90H DOUBLE, '
+        CreateStatement+='BprimeR95H DOUBLE, '
+        CreateStatement+='BprimeR99H DOUBLE, '
         
         CreateStatement+='YearCalc INT, '
         CreateStatement+='MontCalc INT, '
@@ -120,9 +123,9 @@ class NewMDB:
         query+=     "BedArea, BedAreaSE, MeanWt, MeanWtSE, MeanWtSource,  "
         query+=     "DenCat, QuotaCalcRegion, LicenceRegion,  "
         query+=     "n_DenCat, BiomDC99L,     BiomDC95L,     BiomDC90L,     BiomDC75L,     BiomDCMed,     BiomDC75H,     BiomDC90H,    BiomDC95H,      BiomDC99H,  "
-        query+=               "BiomDC_pr_99L, BiomDC_pr_95L, BiomDC_pr_90L, BiomDC_pr_75L, BiomDC_pr_Med, BiomDC_pr_75H, BiomDC_pr_90H, BiomDC_pr_95H, BiomDC_pr_99H,  "
+        #query+=               "BprimeDC99L, BprimeDC95L, BprimeDC90L, BprimeDC75L, BprimeDCMed, BprimeDC75H, BprimeDC90H, BprimeDC95H, BprimeDC99H,  "
         query+=     "n_Region, BiomR99L,     BiomR95L,     BiomR90L,     BiomR75L,     BiomRMed,     BiomR75H,     BiomR90H,     BiomR95H,     BiomR99H,  "
-        query+=               "BiomR_pr_99L, BiomR_pr_95L, BiomR_pr_90L, BiomR_pr_75L, BiomR_pr_Med, BiomR_pr_75H, BiomR_pr_90H, BiomR_pr_95H, BiomR_pr_99H,  "
+        query+=               "BprimeR99L, BprimeR95L, BprimeR90L, BprimeR75L, BprimeRMed, BprimeR75H, BprimeR90H, BprimeR95H, BprimeR99H,  "
         query+=     "YearCalc, MontCalc, DayCalc) "
         query+="Values("
         query+=str(self.Key.GetValue(IncrementFirst=True))
@@ -161,16 +164,17 @@ class NewMDB:
         query+=","+str(CBBiomassDC[6])
         query+=","+str(CBBiomassDC[7])
         query+=","+str(CBBiomassDC[8])
-        CBBiomass_prDC=CurVal['CBBiomass_prDC']
-        query+=","+str(CBBiomass_prDC[0])
-        query+=","+str(CBBiomass_prDC[1])
-        query+=","+str(CBBiomass_prDC[2])
-        query+=","+str(CBBiomass_prDC[3])
-        query+=","+str(CBBiomass_prDC[4])
-        query+=","+str(CBBiomass_prDC[5])
-        query+=","+str(CBBiomass_prDC[6])
-        query+=","+str(CBBiomass_prDC[7])
-        query+=","+str(CBBiomass_prDC[8])
+        #Don't want B-primes associated with density classes
+        #CBBiomass_prDC=CurVal['CBBiomass_prDC']
+        #query+=","+str(CBBiomass_prDC[0])
+        #query+=","+str(CBBiomass_prDC[1])
+        #query+=","+str(CBBiomass_prDC[2])
+        #query+=","+str(CBBiomass_prDC[3])
+        #query+=","+str(CBBiomass_prDC[4])
+        #query+=","+str(CBBiomass_prDC[5])
+        #query+=","+str(CBBiomass_prDC[6])
+        #query+=","+str(CBBiomass_prDC[7])
+        #query+=","+str(CBBiomass_prDC[8])
         
         query+=","+str(CurVal['n_Region'])
         CBBiomassQR=CurVal['CBBiomassQR']
